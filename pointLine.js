@@ -247,8 +247,11 @@ function stopAnimation(){
     point.stopAnimation()
 }
 function downLoad(){
-    var showJs = document.getElementById("showJs")
-    showJs.className = "showJs"
+    var showJs = document.getElementById('showJs')
+    var operate = document.getElementById('operate')
+    operate.className='model clearfix modeled'
+    showJs.className = 'showJs'
+    
     showJs.innerHTML =
     `<pre>
     var point = {
@@ -470,6 +473,8 @@ function downLoad(){
 }
 function hideDownLoad(){
     var showJs = document.getElementById("showJs")
+    var operate = document.getElementById('operate')
+    operate.className='model clearfix'
     showJs.className = ""
     showJs.innerHTML =''
 }

@@ -19,12 +19,16 @@ body {
     display: block;
     clear: both;
 }
+
 .model{
     position: absolute;
     border: 1px solid #888;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+.modeled{
+    left: 0;
 }
 .model ul{
     list-style: none;
