@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>ball-line-animation</title>
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+            body {
+                position: relative;
+                background: #efefef;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100vw;
+                height: 100vh;
+            }
+            h1 {
+                position: absolute;
+                color: #00000064;
+                filter: blur(2px);
+            }
+            .bg {
+                position: absolute;
+                bottom: 0;
+                z-index: -2;
+                width: 100vw;
+                height: 35vh;
+                background-color: #fff;
+            }
+            main {
+                width: 390px;
+                height: 844px;
+                background: #fff;
+                box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+            }
+            main > div {
+                width: 100%;
+                height: 422px;
+            }
+            #operate {
+                display: none;
+                flex: 1;
+                flex-wrap: wrap;
+                text-align: center;
+                background: #efefef;
+                height: 100%;
+            }
+            #operate > div {
+                border: 3px solid #000;
+            }
+            #operate > div .text {
+                padding: 10px;
+                height: 50%;
+            }
+            #operate > div span {
+                display: inline-block;
+                vertical-align: middle;
+                outline: none;
+                border: none;
+                padding: 10px 0;
+            }
+            #operate > div button {
+                cursor: pointer;
+                display: inline-block;
+                vertical-align: middle;
+                outline: none;
+                border: none;
+                font-size: 20px;
+                padding: 10px 0;
+                width: 25px;
+            }
+            #operate .number {
+                width: 25%;
+            }
+            #operate .color {
+                width: 50%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Ball Line Animation</h1>
+        <div class="bg"></div>
+        <main>
+            <div id="canvas">
+                <canvas id="canvasElem" width="390"></canvas>
+            </div>
+            <div id="operate">
+                <div class="number">
+                    <div class="text">球形速度</div>
+                    <div>
+                        <button onclick="changeSpeed(-1)">-</button>
+                        <span id="speed">2</span>
+                        <button onclick="changeSpeed(1)">+</button>
+                    </div>
+                </div>
+                <div class="number">
+                    <div class="text">球形大小</div>
+                    <div>
+                        <button onclick="changeRadius(-1)">-</button>
+                        <span id="radius">10</span>
+                        <button onclick="changeRadius(1)">+</button>
+                    </div>
+                </div>
+                <div class="number">
+                    <div class="text">球形数量</div>
+                    <div>
+                        <button onclick="changeNumber(-1)">-</button>
+                        <span id="number">2</span>
+                        <button onclick="changeNumber(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="number">
+                    <div class="text">线条范围</div>
+                    <div>
+                        <button onclick="changeLength(-1)">-</button>
+                        <span id="length">500</span>
+                        <button onclick="changeLength(1)">+</button>
+                    </div>
+                </div>
+                <div class="color">
+                    <div class="text">线条颜色</div>
+                    <div>
+                        <input id="lineColor" type="color" value="#90EE90" />
+                    </div>
+                </div>
+
+                <div class="color">
+                    <div class="text">球形颜色</div>
+                    <div>
+                        <input id="ballColor" type="color" value="#90EE90" />
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+    <script src="animation.js"></script>
+    <script src="index.js"></script>
+</html>
