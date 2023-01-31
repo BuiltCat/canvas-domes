@@ -55,6 +55,17 @@ const UP = [0, 4, 1]
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 
+async function timer(func, count, space) {
+    for (let i = 0; i <= count; i++) {
+        func(i, count, space)
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve('execute')
+            }, space)
+        })
+    }
+}
+
 function random(min, max) {
     return Math.round(Math.random() * (max - min)) + min;
 }
@@ -65,7 +76,7 @@ function initScene() {
     ctx.font = `48px serif`;
     ctx.fillStyle = '#bbada0';
     ctx.fillRect(0, 200, 590, 390)
-    ctx.fillStyle = 'rgba(238, 228, 218, 0.35)'
+    ctx.fillStyle = '#ccc1b4'
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
             let x = initX + i * (BLOCK_SIZE + SPACE_SIZE);
@@ -78,9 +89,11 @@ function initScene() {
             })
         }
     }
-    next()
+    ctx.save()
+    generate(2)
+    render()
 }
-function generate() {
+function generate(number) {
     const noState = []
     for (let i = 0; i < STATE.length; i++) {
         if (STATE[i].value === 0) {
@@ -88,32 +101,39 @@ function generate() {
         }
     }
     if (noState.length === 0) return
-    const curr = noState[random(0, noState.length - 1)]
-    STATE[curr].value = Math.random() > 0.5 ? 2 : 4
+    for (let i = 0; i < Math.min(number, noState.length); i++) {
+        const curr = noState[random(0, noState.length - 1)]
+        STATE[curr].value = Math.random() > 0.5 ? 2 : 4
+    }
 }
-function render() {
+async function render() {
+
+    await timer((i, count) => {
+        for (let j = 0; j < STATE.length; j++) {
+            const { x, y, value } = STATE[j]
+            if (!value) continue
+            ctx.fillStyle = COLOR_MAP[value].fillStyle;
+            let BASE_BLOCK = BLOCK_SIZE / count * i
+            ctx.fillRect(x + Math.floor((BLOCK_SIZE - BASE_BLOCK) / 2), y + Math.floor((BLOCK_SIZE - BASE_BLOCK) / 2), BASE_BLOCK, BASE_BLOCK)
+        }
+    }, 50, 1)
     for (let i = 0; i < STATE.length; i++) {
         const { x, y, value } = STATE[i]
         if (!value) continue
-        ctx.fillStyle = COLOR_MAP[value].fillStyle;
-        ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-        ctx.fillStyle = COLOR_MAP[value].fontStyle;
         const text = ctx.measureText(value)
+        ctx.fillStyle = COLOR_MAP[value].fontStyle;
         ctx.fillText(value, x + BLOCK_SIZE / 2 - text.width / 2, y + BLOCK_SIZE / 2 + 15)
     }
 }
 function clear() {
     for (let i = 0; i < STATE.length; i++) {
         const { x, y } = STATE[i]
-        console.log(i)
-        ctx.clearRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-        ctx.fillStyle = 'rgba(238, 228, 218, 0.35)'
+
+        // ctx.fillStyle = '#fff';
+        // ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+        ctx.fillStyle = '#ccc1b4'
         ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
     }
-}
-function next() {
-    generate()
-    render()
 }
 function mergeBoxValue(direction) {
     for (let i = direction[0]; i < direction[0] + direction[1] * 3 + 1; i += direction[1]) {
@@ -156,25 +176,36 @@ function mergeBoxValue(direction) {
 
 window.onload = initScene
 window.addEventListener('keydown', (e) => {
-    clear()
     const key = e.key
     switch (key) {
         case 'w':
+            clear()
             mergeBoxValue(UP)
+            generate(1)
+            render()
             break;
         case 'a':
+            clear()
             mergeBoxValue(LEFT)
+            generate(1)
+            render()
             break;
         case 's':
+            clear()
             mergeBoxValue(DOWN)
+            generate(1)
+            render()
             break;
         case 'd':
+            clear()
             mergeBoxValue(RIGHT)
+            generate(1)
+            render()
             break;
         default:
             break;
     }
-    next()
+
 })
 
 
