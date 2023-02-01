@@ -70,7 +70,7 @@ function random(min, max) {
     return Math.round(Math.random() * (max - min)) + min;
 }
 
-function initScene() {
+async function initScene() {
     let initX = 20
     let initY = 220
     ctx.font = `48px serif`;
@@ -85,13 +85,14 @@ function initScene() {
             STATE.push({
                 x,
                 y,
-                value: 0
+                value: 0,
+                from: STATE.length,
+                gen: false
             })
         }
     }
-    ctx.save()
     generate(2)
-    render()
+    await render()
 }
 function generate(number) {
     const noState = []
@@ -104,33 +105,63 @@ function generate(number) {
     for (let i = 0; i < Math.min(number, noState.length); i++) {
         const curr = noState[random(0, noState.length - 1)]
         STATE[curr].value = Math.random() > 0.5 ? 2 : 4
+        STATE[curr].gen = true
     }
+}
+function renderText(x, y, value) {
+    const text = ctx.measureText(value)
+    ctx.fillStyle = COLOR_MAP[value].fontStyle;
+    ctx.fillText(value, x + BLOCK_SIZE / 2 - text.width / 2, y + BLOCK_SIZE / 2 + 15)
 }
 async function render() {
-
+    const newRednerList = []
+    const moveRenderList = []
+    for (let j = 0; j < STATE.length; j++) {
+        const { x, y, value, from, gen } = STATE[j]
+        if (!value) continue
+        ctx.fillStyle = COLOR_MAP[value].fillStyle
+        if (j === from && gen) {
+            newRednerList.push(j)
+            // } else if (j !== from) {
+            // moveRenderList.push(j)
+        } else {
+            moveRenderList.push(j)
+            // ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+            // renderText(x, y, value)
+        }
+    }
     await timer((i, count) => {
-        for (let j = 0; j < STATE.length; j++) {
-            const { x, y, value } = STATE[j]
-            if (!value) continue
-            ctx.fillStyle = COLOR_MAP[value].fillStyle;
+        clear()
+        for (const current of newRednerList) {
+            const { x, y, value } = STATE[current]
             let BASE_BLOCK = BLOCK_SIZE / count * i
+            ctx.fillStyle = COLOR_MAP[value].fillStyle;
             ctx.fillRect(x + Math.floor((BLOCK_SIZE - BASE_BLOCK) / 2), y + Math.floor((BLOCK_SIZE - BASE_BLOCK) / 2), BASE_BLOCK, BASE_BLOCK)
+            if (i === count) {
+                renderText(x, y, value)
+            }
+            STATE[current].gen = false
+        }
+        for (const current of moveRenderList) {
+            const { x, y, value, from } = STATE[current]
+
+            for (const f of Array.isArray(from) ? from : [from]) {
+                const diffX = (STATE[f].x - x) / count * (count - i) + x
+                const diffY = (STATE[f].y - y) / count * (count - i) + y
+                ctx.fillStyle = COLOR_MAP[value].fillStyle;
+                ctx.fillRect(diffX, diffY, BLOCK_SIZE, BLOCK_SIZE)
+            }
+            if (i === count) {
+                renderText(x, y, value)
+            }
         }
     }, 50, 1)
-    for (let i = 0; i < STATE.length; i++) {
-        const { x, y, value } = STATE[i]
-        if (!value) continue
-        const text = ctx.measureText(value)
-        ctx.fillStyle = COLOR_MAP[value].fontStyle;
-        ctx.fillText(value, x + BLOCK_SIZE / 2 - text.width / 2, y + BLOCK_SIZE / 2 + 15)
-    }
 }
 function clear() {
+    ctx.fillStyle = '#bbada0';
+    ctx.fillRect(0, 200, 590, 390)
     for (let i = 0; i < STATE.length; i++) {
         const { x, y } = STATE[i]
-
-        // ctx.fillStyle = '#fff';
-        // ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
         ctx.fillStyle = '#ccc1b4'
         ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE)
     }
@@ -140,22 +171,27 @@ function mergeBoxValue(direction) {
         // 获取每一列的值
         let stack = []
         for (let count = 0; count < 4; count++) {
-            // console.log(i + count * direction[2])
-            const current = parseInt(STATE[i + count * direction[2]].value)
-            if (current !== 0) {
-                stack.push(current)
+            const current = i + count * direction[2]
+            if (STATE[current].value !== 0) {
+                stack.push({
+                    value: STATE[current].value,
+                    location: current,
+                    from: current
+                })
             }
         }
         let combine = []
         while (stack.length) {
             const current = stack.shift()
             const length = combine.length
+
             if (length === 0) {
                 combine.push(current)
                 continue
             }
-            if (combine[length - 1] === current) {
-                combine[length - 1] += current
+            if (combine[length - 1].value === current.value) {
+                combine[length - 1].value += current.value
+                combine[length - 1].from = [combine[length - 1].location, current.location]
                 if (stack.length > 0) {
                     combine.push(stack.shift())
                 }
@@ -165,42 +201,42 @@ function mergeBoxValue(direction) {
         }
         for (let count = 0; count < 4; count++) {
             if (combine[count]) {
-                STATE[i + count * direction[2]].value = combine[count]
+                STATE[i + count * direction[2]].value = combine[count].value
+                STATE[i + count * direction[2]].from = combine[count].from
             } else {
                 STATE[i + count * direction[2]].value = 0
             }
         }
     }
-
 }
 
 window.onload = initScene
-window.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', async (e) => {
     const key = e.key
     switch (key) {
         case 'w':
             clear()
             mergeBoxValue(UP)
             generate(1)
-            render()
+            await render()
             break;
         case 'a':
             clear()
             mergeBoxValue(LEFT)
             generate(1)
-            render()
+            await render()
             break;
         case 's':
             clear()
             mergeBoxValue(DOWN)
             generate(1)
-            render()
+            await render()
             break;
         case 'd':
             clear()
             mergeBoxValue(RIGHT)
             generate(1)
-            render()
+            await render()
             break;
         default:
             break;
